@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta1
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/cb-kubecd/mikes-golang-test:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/cb-kubecd/mikes-golang-test:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: mikes-golang-test
+        chartPath: charts/mikes-golang-test
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/cb-kubecd/mikes-golang-test'
+          image.tag: '{{.DIGEST_HEX}}'
